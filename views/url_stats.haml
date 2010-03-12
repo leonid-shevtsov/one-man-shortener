@@ -1,5 +1,20 @@
 %h1 URL stats
-%div
-  Url:
-  %a{:href => record[:url]} 
-    =html_escape record[:url]
+%dl
+  %dt Url
+  %dd
+    %a{:href => record[:url]} 
+      =html_escape record[:url]
+  %dt Shortened url
+  %dd
+    %a{:href => "/s/#{record[:slug]}"}
+      =html_escape "http://#{request.host}/s/#{record[:slug]}"
+%h2 Hits
+-if hits.empty?
+  No hits so far. 
+-else
+  %table{:width=>'100%'}
+    -hits.each do |hit|
+      %tr
+        %td=hit[:visited_at].to_s(:long)
+        %td=hit[:ip]
+        %td=html_escape hit[:referer]

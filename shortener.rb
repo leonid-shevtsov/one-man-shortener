@@ -3,6 +3,7 @@ require 'rubygems'
 require 'sinatra'
 require 'sequel'
 require 'active_support'
+require 'haml'
 
 AUTH_USER = 'admin'
 AUTH_PASSWORD_HASH = '72b155508c6b12d17828d20d53662080'
@@ -33,8 +34,8 @@ get '/' do
 end
 
 get '/s/:slug' do
-  if @record = DB[:urls].where(:slug => params[:slug]).first
-    #TODO stats
+  if record = DB[:urls].where(:slug => params[:slug]).first
+    DB[:url_hits].insert(:url_id => record[:id], :visited_at => Time.now, :ip => request.ip, :referer => request.referer)
     redirect record[:url], 301
   else
     error 404
@@ -43,7 +44,8 @@ end
 
 get '/stats/s/:slug' do
   if record = DB[:urls].where(:slug => params[:slug]).first
-    haml :url_stats, :locals => {:record => record}
+    hits = DB[:url_hits].where(:url_id => record[:id]).all
+    haml :url_stats, :locals => {:record => record, :hits => hits}
   else
     error 404
   end
@@ -79,9 +81,9 @@ post '/shorten' do
   end
 end
 
-get '/stats' do
+get '/urls' do
   protected!
-  "Stats"
+  haml :urls, :locals => {:urls => DB[:urls].all}
 end
 
 get '/upload' do

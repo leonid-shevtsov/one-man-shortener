@@ -1,0 +1,13 @@
+%h1 All shortened urls
+%table{:width => '100%'}
+  -urls.each do |url|
+    %tr
+      %td
+        %a{:href => url[:url]}
+          =html_escape url[:url]
+      %td
+        %a{:href => "http://#{request.host}/s/#{url[:slug]}"}
+          Short
+      %td
+        %a{:href => "/stats/s/#{url[:slug]}"}
+          Stats
