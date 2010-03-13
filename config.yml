@@ -1,0 +1,4 @@
+# admin : admin. Password hash is Digest::MD5.hexdigest(password + salt). Salt should be very very random
+login: admin
+salt: "2zyu88yzld60ae9f"
+password_hash: "303d9d679dc385dc5f7ca206659f10ba"

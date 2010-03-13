@@ -6,12 +6,10 @@ require 'sinatra'
 require 'sequel'
 require 'active_support'
 require 'haml'
+require 'yaml'
 
-AUTH_USER = 'admin'
-AUTH_PASSWORD_HASH = '72b155508c6b12d17828d20d53662080'
-AUTH_SALT = 'sgawdgbsdghfsghdf'
-
-DB = Sequel.sqlite('db/shortener.db')
+DB = Sequel.sqlite('db/shortener.sqlite3')
+CONFIG = YAML.load(File.read('config.yml'))
 
 helpers do
   def protected!
@@ -26,8 +24,8 @@ helpers do
     @auth.provided? && 
       @auth.basic? && 
       @auth.credentials && 
-      @auth.credentials[0] == AUTH_USER && 
-      Digest::MD5.hexdigest(@auth.credentials[1]+AUTH_SALT) == AUTH_PASSWORD_HASH
+      @auth.credentials[0] == CONFIG['login'] && 
+      Digest::MD5.hexdigest(@auth.credentials[1]+CONFIG['salt']) == CONFIG['password_hash']
   end
 
   def content_type_to_extension(content_type)
@@ -164,7 +162,7 @@ post '/upload' do
       DB[:images].insert(:caption => caption, :slug => slug, :descriptive_slug => descriptive_slug, :content_type => content_type, :created_at => Time.now)
 
       tmpfile = params[:file][:tempfile]
-      File.open("uploads/#{descriptive_slug}",'w'){|f| f.puts(tmpfile.read)}
+      File.open("uploads/#{descriptive_slug}",'w'){|f| f.write(tmpfile.read)}
 
       redirect "/stats/i/#{slug}", 303
     end

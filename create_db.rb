@@ -1,7 +1,7 @@
 require 'rubygems'
 require 'sequel'
 
-db = Sequel.sqlite('db/shortener.db')
+db = Sequel.sqlite('db/shortener.sqlite3')
 
 db.create_table :urls do
   primary_key :id
