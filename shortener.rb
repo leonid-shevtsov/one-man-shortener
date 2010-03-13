@@ -56,6 +56,12 @@ get '/i/:slug' do
 end
 
 get '/stats/i/:slug' do
+  if record = DB[:images].where(:slug => params[:slug]).first
+    hits = DB[:image_hits].where(:image_id => record[:id]).all
+    haml :image_stats, :locals => {:record => record, :hits => hits}
+  else
+    error 404
+  end
 end
 
 get '/shorten' do
