@@ -15,6 +15,8 @@ db.create_table :images do
   String :filename
   String :slug
   String :caption
+  String :descriptive_slug
+  String :content_type
   Time :created_at
 end
 

@@ -1,0 +1,13 @@
+%h1 All uploaded images
+%p
+  %a{:href => '/upload'} Upload another
+%table{:width => '100%'}
+  -images.each do |image|
+    %tr
+      %td=html_escape image[:caption]
+      %td
+        %a{:href => "http://#{request.host}/i/#{image[:slug]}"}
+          =html_escape "http://#{request.host}/i/#{image[:slug]}"
+      %td
+        %a{:href => "/stats/i/#{image[:slug]}"}
+          Stats

@@ -1,3 +1,5 @@
+$KCODE = 'u'
+
 require 'digest/md5'
 require 'rubygems'
 require 'sinatra'
@@ -27,6 +29,15 @@ helpers do
       @auth.credentials[0] == AUTH_USER && 
       Digest::MD5.hexdigest(@auth.credentials[1]+AUTH_SALT) == AUTH_PASSWORD_HASH
   end
+
+  def content_type_to_extension(content_type)
+    {
+      'image/jpeg' => 'jpg',
+      'image/png' => 'png',
+      'image/x-png' => 'png',
+      'image/gif' => 'gif'
+    }[content_type]
+  end
 end
 
 get '/' do
@@ -43,6 +54,7 @@ get '/s/:slug' do
 end
 
 get '/stats/s/:slug' do
+  protected!
   if record = DB[:urls].where(:slug => params[:slug]).first
     hits = DB[:url_hits].where(:url_id => record[:id]).all
     haml :url_stats, :locals => {:record => record, :hits => hits}
@@ -52,13 +64,40 @@ get '/stats/s/:slug' do
 end
 
 get '/i/:slug' do
-  "get uploaded image"
+  if (record = DB[:images].where(:slug => params[:slug]).first) && File.exists?("uploads/#{record[:descriptive_slug]}")
+    redirect "/uploads/#{record[:descriptive_slug]}", 301
+  else
+    error 404
+  end
+end
+
+get '/uploads/:slug' do
+  if (record = DB[:images].where(:descriptive_slug => params[:slug]).first) && File.exists?("uploads/#{record[:descriptive_slug]}")
+    DB[:image_hits].insert(:image_id => record[:id], :visited_at => Time.now, :ip => request.ip, :referer => request.referer)
+    headers 'Content-Type' => record[:content_type], 'Cache-Control' => 'max-age=31536000', 'Expires' => 10.years.from_now.rfc822
+    File.read("uploads/#{record[:descriptive_slug]}")
+  else
+    error 404
+  end
 end
 
 get '/stats/i/:slug' do
+  protected!
   if record = DB[:images].where(:slug => params[:slug]).first
     hits = DB[:image_hits].where(:image_id => record[:id]).all
     haml :image_stats, :locals => {:record => record, :hits => hits}
+  else
+    error 404
+  end
+end
+
+post '/stats/i/:slug/destroy' do
+  protected!
+  if record = DB[:images].where(:slug => params[:slug]).first
+    DB[:images].where(:id => record[:id]).delete
+    DB[:image_hits].where(:image_id => record[:id]).delete
+    File.unlink("uploads/#{record[:descriptive_slug]}")
+    redirect '/images', 303
   else
     error 404
   end
@@ -70,6 +109,7 @@ get '/shorten' do
 end
 
 post '/shorten' do
+  protected!
   unless params[:url].blank?
     canonical_url = URI.parse(params[:url]).to_s
     if record = DB[:urls].where(:url => canonical_url).first
@@ -79,7 +119,7 @@ post '/shorten' do
       begin
         slug = rand(36**3).to_s(36) # 50k urls should be enough for anyone
       end while DB[:urls].where(:slug => slug).first
-      DB[:urls].insert(:url => canonical_url, :slug => slug)
+      DB[:urls].insert(:url => canonical_url, :slug => slug, :created_at => Time.now)
       redirect "/stats/s/#{slug}", 303
     end
   else
@@ -100,8 +140,34 @@ end
 post '/upload' do
   protected!
   if params[:file] && params[:file][:tempfile]
-    tmpfile = params[:file][:tempfile]
-    tmpfile.read
+    content_type = params[:file][:type]
+    extension = content_type_to_extension(content_type)
+    if extension.blank?
+      "Unknown content type #{content_type.tr('<>','[]')}"
+    else
+      #generate slug
+      begin
+        slug = rand(36**3).to_s(36) # 50k images should be enough for anyone      
+      end while DB[:images].where(['slug LIKE ?',slug+'.%']).first
+
+      slug += "." + extension
+
+      caption = params[:caption].blank? ? File.basename(params[:file][:filename],File.extname(params[:file][:filename])) : params[:caption]
+      caption_parameterized = caption.parameterize
+
+      i=nil
+      begin
+        descriptive_slug = [caption_parameterized,i,extension].compact.join '.'
+        i = i.to_i+1
+      end while DB[:images].where(:descriptive_slug => descriptive_slug).first
+
+      DB[:images].insert(:caption => caption, :slug => slug, :descriptive_slug => descriptive_slug, :content_type => content_type, :created_at => Time.now)
+
+      tmpfile = params[:file][:tempfile]
+      File.open("uploads/#{descriptive_slug}",'w'){|f| f.puts(tmpfile.read)}
+
+      redirect "/stats/i/#{slug}", 303
+    end
   else
     haml :upload
   end
@@ -109,5 +175,5 @@ end
 
 get '/images' do
   protected!
-  haml :images
+  haml :images, :locals => {:images => DB[:images].all}
 end

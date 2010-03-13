@@ -1,0 +1,28 @@
+%h1 Image stats
+%dl
+  %dt Caption
+  %dd=record[:caption]
+  %dt Url
+  %dd
+    %a{:href => "/i/#{record[:slug]}"}
+      =html_escape "http://#{request.host}/i/#{record[:slug]}"
+  %dt Long url
+  %dd
+    %a{:href => "/uploads/#{record[:descriptive_slug]}"}
+      =html_escape "http://#{request.host}/uploads/#{record[:descriptive_slug]}"
+  %dt Filesize
+  %dd=File.size("uploads/#{record[:descriptive_slug]}")
+  %dt Uploaded
+  %dd=record[:created_at].to_s(:long)
+%form{:method => :post, :action => "/stats/i/#{record[:slug]}/destroy"}
+  %input{:type => :submit, :value => 'Destroy', :onclick => 'return confirm("Are you sure?");', :style => 'display:inline;width:auto'}
+%h2 Hits
+-if hits.empty?
+  No hits so far. 
+-else
+  %table{:width=>'100%'}
+    -hits.each do |hit|
+      %tr
+        %td=hit[:visited_at].to_s(:long)
+        %td=hit[:ip]
+        %td=html_escape hit[:referer]
