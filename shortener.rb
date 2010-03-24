@@ -7,6 +7,7 @@ require 'sequel'
 require 'active_support'
 require 'haml'
 require 'yaml'
+require 'mini_magick'
 
 DB = Sequel.sqlite('db/shortener.sqlite3')
 CONFIG = YAML.load(File.read('config.yml'))
@@ -159,10 +160,15 @@ post '/upload' do
         i = i.to_i+1
       end while DB[:images].where(:descriptive_slug => descriptive_slug).first
 
-      DB[:images].insert(:caption => caption, :slug => slug, :descriptive_slug => descriptive_slug, :content_type => content_type, :created_at => Time.now)
+      image = MiniMagick::Image.from_blob(params[:file][:tempfile].read)
 
-      tmpfile = params[:file][:tempfile]
-      File.open("uploads/#{descriptive_slug}",'w'){|f| f.write(tmpfile.read)}
+      unless params[:noresize]
+        image.resize CONFIG['image_dimensions']
+      end
+
+      image.write "uploads/#{descriptive_slug}"
+
+      DB[:images].insert(:caption => caption, :slug => slug, :descriptive_slug => descriptive_slug, :content_type => content_type, :created_at => Time.now)
 
       redirect "/stats/i/#{slug}", 303
     end

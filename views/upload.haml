@@ -6,4 +6,9 @@
   Caption: 
   %input{:type => :text, :name => :caption}
   %br
+  %input{:type => :checkbox, :name => :noresize, :class => 'checkbox'}
+  Don't resize the image to 
+  =CONFIG['image_dimensions']
+
+  %br
   %input{:type => :submit, :value => 'Upload'} 
