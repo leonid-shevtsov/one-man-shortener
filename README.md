@@ -16,7 +16,7 @@ Feature list
 Installation
 ------------
 
-Dependencies: `sinatra`, `haml`, `active_support`, `sequel`, `sqlite3`, `mini_magick`
+Dependencies: `gem install sinatra haml active_support sequel sqlite3 mini_magick`
 
 First run `ruby create_db.rb` to set up database structure in `db/shortener.sqlite3`.
 
@@ -27,7 +27,9 @@ Default login and password are `admin:admin`. To change this, look in `config.ym
 Uploader installation
 ---------------------
 
-To use the uploader, just move it somewhere convenient and change URL, username and password at the head of the script.
+The uploader is only dependant only Ruby's stdlib. Nifty!
+
+Configure URL, username and password at the head of the script. Then use.
 
 TODO
 ----

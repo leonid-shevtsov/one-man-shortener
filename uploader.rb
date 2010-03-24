@@ -55,7 +55,6 @@ else
   end
 
   filename = "#{Dir.tmpdir}/screenshot_#{Time.now.to_i}.png"
-  filename = "screenshot_#{Time.now.to_i}.png"
 
   `scrot #{scrot_params[options[:mode]]} #{filename}`
 
@@ -66,7 +65,12 @@ end
 
 ### Get caption
 
-caption = options[:caption] || `zenity --entry --entry-text="#{default_caption}" --text="Caption" --title="caption"`.strip
+caption = options[:caption] 
+unless caption
+  caption = `zenity --entry --entry-text="#{default_caption}" --text="Caption (or cancel the upload)" --title="caption"`.strip
+  exit unless $?.success?
+end
+
 
 ### Upload (yeah this sucks but I wanted to use Net::HTTP only)
 
