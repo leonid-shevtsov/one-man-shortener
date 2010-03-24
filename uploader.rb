@@ -5,9 +5,13 @@ require 'net/http'
 require 'uri'
 require 'base64'
 
+### Configuration
+
 uploader_uri = URI.parse('http://localhost:9393/upload')
 uploader_user = 'admin'
 uploader_password = 'admin'
+
+### Initialisation
 
 options = {
   :mode => :screen
@@ -60,11 +64,12 @@ else
   default_caption = Time.now.strftime("%Y-%m-%d_%H-%M-%S")
 end
 
+### Get caption
 
 caption = options[:caption] || `zenity --entry --entry-text="#{default_caption}" --text="Caption" --title="caption"`.strip
 
-# now upload
-#
+### Upload (yeah this sucks but I wanted to use Net::HTTP only)
+
 def text_to_multipart(key,value)
   return "Content-Disposition: form-data; name=\"#{URI::escape(key)}\"\r\n" + 
          "\r\n" + 
@@ -98,6 +103,8 @@ response = Net::HTTP.
 
 
 url = response.body
+
+### Done!
 
 if options[:mode] != :file
   if url[0,7] != 'http://' 
