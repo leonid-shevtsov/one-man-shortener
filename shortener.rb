@@ -170,7 +170,13 @@ post '/upload' do
 
       DB[:images].insert(:caption => caption, :slug => slug, :descriptive_slug => descriptive_slug, :content_type => content_type, :created_at => Time.now)
 
-      redirect "/stats/i/#{slug}", 303
+      if params[:format] != 'url'
+        redirect "/stats/i/#{slug}", 303
+      else
+        uri = URI.parse(request.url)
+        uri.path = "/i/#{slug}"
+        uri.to_s
+      end
     end
   else
     haml :upload
