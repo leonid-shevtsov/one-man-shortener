@@ -101,9 +101,14 @@ query = params.collect {|p| '--' + boundary + "\r\n" + p}.join('') + "--" + boun
 
 `notify-send "Uploading image..."`
 
-response = Net::HTTP.
-  start(uploader_uri.host,uploader_uri.port).
-  post2(uploader_uri.path, query, "Content-type" => "multipart/form-data; boundary=" + boundary, "Authorization" => "Basic #{Base64.encode64("#{uploader_user}:#{uploader_password}")}")
+begin
+  response = Net::HTTP.
+    start(uploader_uri.host,uploader_uri.port).
+    post2(uploader_uri.path, query, "Content-type" => "multipart/form-data; boundary=" + boundary, "Authorization" => "Basic #{Base64.encode64("#{uploader_user}:#{uploader_password}")}")
+rescue
+  `zenity --error --text="Error connecting to server while uploading screenshot"`
+  exit
+end
 
 
 url = response.body
