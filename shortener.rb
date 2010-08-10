@@ -187,8 +187,8 @@ get '/images' do
   protected!
   images = DB[:images].all
   counts = {}
-  DB.fetch('SELECT id, count(*) as cnt from images join image_hits on images.id=image_hits.image_id GROUP BY images.id').do |row|
+  DB.fetch('SELECT id, count(*) as cnt from images join image_hits on images.id=image_hits.image_id GROUP BY images.id') do |row|
     counts[row[:id]] = row[:cnt]
   end
-  haml :images, :locals => {:images => DB[:images].all}
+  haml :images, :locals => {:images => DB[:images].all, :counts => counts}
 end
