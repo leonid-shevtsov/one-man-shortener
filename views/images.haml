@@ -11,5 +11,9 @@
         %a{:href => "/i/#{image[:slug]}"}
           =html_escape "http://#{request.host}/i/#{image[:slug]}"
       %td
+        =image[:created_at]
+      %td
+        =counts[image[:id]] || 0
+      %td
         %a{:href => "/stats/i/#{image[:slug]}"}
           Stats
