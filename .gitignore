@@ -1,3 +1,4 @@
+.rvmrc
 db/*
 uploads/*
 public/.htaccess
