@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<ImageHostingServiceManager xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <ImageHostingServices>
+    <ImageHostingService>
+      <Name>one-man-shortner.me</Name>
+      <Arguments>
+        <ArrayOfString>
+          <string>format</string>
+          <string>url</string>
+        </ArrayOfString>
+      </Arguments>
+      <UploadURL>http://YOUR_HOST_NAME/upload</UploadURL>
+      <FileForm>file</FileForm>
+      <RegexpList>
+        <string>^http://.*$</string>
+      </RegexpList>
+      <Fullimage>$1</Fullimage>
+      <Thumbnail />
+      <Regexps />
+    </ImageHostingService>
+  </ImageHostingServices>
+</ImageHostingServiceManager>

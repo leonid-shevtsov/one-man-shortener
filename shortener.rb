@@ -13,14 +13,16 @@ DB = Sequel.sqlite('db/shortener.sqlite3')
 CONFIG = YAML.load(File.read('config.yml'))
 
 helpers do
-  def protected!
-    unless authorized?
+  def protected!(allow_uploader_access = false)
+    unless authorized?(allow_uploader_access)
       response['WWW-Authenticate'] = %(Basic realm="Admin")
       throw(:halt, [401, "Not authorized\n"])
     end
   end
 
-  def authorized?
+  def authorized?(allow_uploader_access = false)
+    return true if allow_uploader_access && !params['uploader_key'].blank? && (params['uploader_key'] == CONFIG['uploader_key'])
+
     @auth ||=  Rack::Auth::Basic::Request.new(request.env)
     @auth.provided? && 
       @auth.basic? && 
@@ -108,7 +110,7 @@ get '/shorten' do
 end
 
 post '/shorten' do
-  protected!
+  protected!(true)
   unless params[:url].blank?
     canonical_url = URI.parse(params[:url]).to_s
     if record = DB[:urls].where(:url => canonical_url).first
@@ -137,7 +139,7 @@ get '/upload' do
 end
 
 post '/upload' do
-  protected!
+  protected!(true)
   if params[:file] && params[:file][:tempfile]
     content_type = params[:file][:type]
     extension = content_type_to_extension(content_type)
