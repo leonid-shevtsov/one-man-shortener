@@ -4,5 +4,5 @@ require 'sinatra'
 Sinatra::Base.set(:run, false)
 Sinatra::Base.set(:env, ENV['RACK_ENV'])
 
-require 'shortener'
+require './shortener'
 run Sinatra::Application

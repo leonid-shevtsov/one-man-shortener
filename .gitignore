@@ -1,5 +1,7 @@
 .rvmrc
+.ruby-version
 db/*
 uploads/*
 public/.htaccess
+tmp/*
 
