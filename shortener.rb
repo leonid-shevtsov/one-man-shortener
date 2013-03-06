@@ -24,10 +24,10 @@ helpers do
     return true if allow_uploader_access && !params['uploader_key'].blank? && (params['uploader_key'] == CONFIG['uploader_key'])
 
     @auth ||=  Rack::Auth::Basic::Request.new(request.env)
-    @auth.provided? && 
-      @auth.basic? && 
-      @auth.credentials && 
-      @auth.credentials[0] == CONFIG['login'] && 
+    @auth.provided? &&
+      @auth.basic? &&
+      @auth.credentials &&
+      @auth.credentials[0] == CONFIG['login'] &&
       Digest::MD5.hexdigest(@auth.credentials[1]+CONFIG['salt']) == CONFIG['password_hash']
   end
 
@@ -42,7 +42,7 @@ helpers do
 end
 
 get '/' do
-  haml :index
+  redirect 'http://leonid.shevtsov.me', 301
 end
 
 get '/s/:slug' do
@@ -148,7 +148,7 @@ post '/upload' do
     else
       #generate slug
       begin
-        slug = rand(36**3).to_s(36) # 50k images should be enough for anyone      
+        slug = rand(36**3).to_s(36) # 50k images should be enough for anyone
       end while DB[:images].where(['slug LIKE ?',slug+'.%']).first
 
       slug += "." + extension
